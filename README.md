@@ -78,13 +78,13 @@ See [the GitHub repo](https://github.com/piersfinlayson/epio).
 `main` is not a release branch, and may take breaking changes at any time.  Pin your project to a tag:
 
 ```bash
-git clone --depth 1 --branch v0.2.2 https://github.com/piersfinlayson/epio.git
+git clone --depth 1 --branch v0.2.3 https://github.com/piersfinlayson/epio.git
 ```
 
 If your project clones `epio` from a `Makefile`, keep the version in a variable, so it is visible and easy to bump:
 
 ```make
-EPIO_VERSION ?= v0.2.2
+EPIO_VERSION ?= v0.2.3
 
 epio:
 	@if [ ! -d "$@" ]; then \
@@ -99,7 +99,7 @@ Note that this target will not update an existing checkout - after bumping `EPIO
 
 ### apio compatibility
 
-`epio` v0.2.2 requires [`apio`](https://github.com/piersfinlayson/apio) v0.3.0 or later.  `epio_from_apio()` reads GPIO pull, drive strength and slew rate state that `apio` did not track before v0.2.0, and epio's tests stage RX FIFO words in a way that `apio` v0.3.0 changed.
+`epio` v0.2.3 requires [`apio`](https://github.com/piersfinlayson/apio) v0.3.0 or later.  `epio_from_apio()` reads GPIO pull, drive strength and slew rate state that `apio` did not track before v0.2.0, and epio's tests stage RX FIFO words in a way that `apio` v0.3.0 changed.
 
 `epio`'s own build clones `apio` at the version given by `APIO_VERSION` in the [`Makefile`](Makefile).  If your project already vendors `apio`, make sure it is pinned to a compatible version too - the two are built from source together, so a mismatch shows up as a compile error in `apio.h` rather than anything more helpful.
 
@@ -121,6 +121,7 @@ Current limitations:
 - Only supports 4 word FIFOs (`FJOIN_RX` and `FJOIN_TX` are ignored).
 - Ignores clock divider settings.
 - `EXEC_STALLED` in `EXECCTRL` isn't reported.
+- A forced instruction that has to wait, for example a `WAIT` on a pin that is low, is skipped.  On real hardware, the state machine waits until the instruction completes.
 - Limited DMA support - a pair of channels that reads an address from one SM's RX FIFO and writes the SRAM value there to another SM's TX FIFO, and a channel that drains an SM's RX FIFO into an SRAM ring.
 
 ## WASM

@@ -24,6 +24,7 @@ EPIO_WASM_EXPORTS := \
 	\
 	"_epio_set_instr", \
 	"_epio_get_instr", \
+	"_epio_force_sm_instr", \
 	"_epio_step_cycles", \
 	"_epio_get_cycle_count", \
 	"_epio_reset_cycle_count", \

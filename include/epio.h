@@ -252,6 +252,21 @@ EPIO_EXPORT void epio_set_instr(epio_t *epio, uint8_t block, uint8_t instr_num, 
 EPIO_EXPORT uint16_t epio_get_instr(epio_t *epio, uint8_t block, uint8_t instr_num);
 
 /**
+ * @brief Emulate a write to a state machine's SMx_INSTR register.
+ *
+ * The state machine's pending delay is kept and the instruction's own delay is
+ * ignored.  A forced instruction that has to wait, for example a WAIT on a pin
+ * that is low, is skipped.  On real hardware, the state machine waits until the
+ * instruction completes.
+ *
+ * @param epio  The epio instance.
+ * @param block PIO block index (0 to NUM_PIO_BLOCKS-1).
+ * @param sm    State machine index within the block (0 to NUM_SMS_PER_BLOCK-1).
+ * @param instr Encoded 16-bit PIO instruction.
+ */
+EPIO_EXPORT void epio_force_sm_instr(epio_t *epio, uint8_t block, uint8_t sm, uint16_t instr);
+
+/**
  * @brief Advance all enabled state machines by a number of clock cycles.
  *
  * Each enabled SM is stepped exactly @p cycles clock cycles.  SMs stalled

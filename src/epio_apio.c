@@ -118,34 +118,12 @@ static void apply_apio_state(epio_t *epio) {
 
             // Pre-instructions: executed immediately against the live SM
             // state.  Applied for the same reason as TX FIFO entries.
-            //
-            // The SM's in-flight delay is snapshotted before, and restored
-            // after, executing the injected pre-instructions.  This serves two
-            // distinct purposes:
-            //
-            //   1. Preserving the running SM's pending delay.  Pre-instructions
-            //      are injected onto a live SM that may be partway through a
-            //      delayed instruction (e.g. the address SM mid `in x, 21 [2]`).
-            //      epio_exec_instr_sm() unconditionally writes SM.delay at the
-            //      end of every instruction, so without this guard the injected
-            //      pair (PULL + MOV X, OSR from pio_switch_rom_region) would
-            //      overwrite the pending delay with their own, permanently
-            //      phase-shifting the SM against the bus.
-            //
-            //   2. Swallowing any delay/side-set the injected instructions
-            //      themselves encode.  These pre-instructions model PIO EXECs
-            //      issued from the CPU, which run effectively instantaneously
-            //      relative to the SM.  epio does not model fine-grained CPU/PIO
-            //      interleaving, so discarding their own delay is the correct
-            //      approximation rather than applying it to the SM.
             uint8_t pre_count = _apio_emulated_pio.pre_instr_count[block][sm];
             if (pre_count <= MAX_PRE_INSTRS) {
-                uint8_t saved_delay = SM(block, sm).delay;
                 for (int p = 0; p < pre_count; p++) {
-                    epio_exec_instr_sm(epio, block, sm,
-                                       _apio_emulated_pio.pre_instr[block][sm][p]);
+                    epio_force_sm_instr(epio, block, sm,
+                                        _apio_emulated_pio.pre_instr[block][sm][p]);
                 }
-                SM(block, sm).delay = saved_delay;
             }
         }
 

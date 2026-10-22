@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.3 - 2026-10-22
+
+Added:
+
+- `epio_force_sm_instr()` emulates a write to `SMx_INSTR`.
+
 ## v0.2.2 - 2026-10-13
 
 Fixed:

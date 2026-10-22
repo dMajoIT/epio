@@ -852,3 +852,28 @@ uint8_t epio_exec_instr_sm(epio_t *epio, uint8_t block, uint8_t sm, uint16_t ins
 
     return dont_update_pc;
 }
+
+void epio_force_sm_instr(epio_t *epio, uint8_t block, uint8_t sm, uint16_t instr) {
+    CHECK_BLOCK_SM();
+    // The SM's in-flight delay is snapshotted before, and restored after,
+    // executing the instruction.  This serves two distinct purposes:
+    //
+    //   1. Preserving the running SM's pending delay.  A forced instruction
+    //      may be injected onto a live SM that is partway through a delayed
+    //      instruction (e.g. the address SM mid `in x, 21 [2]`).
+    //      epio_exec_instr_sm() unconditionally writes SM.delay at the end of
+    //      every instruction, so without this guard the injected pair (PULL +
+    //      MOV X, OSR from pio_switch_rom_region) would overwrite the pending
+    //      delay with their own, permanently phase-shifting the SM against
+    //      the bus.
+    //
+    //   2. Swallowing any delay/side-set the injected instruction itself
+    //      encodes.  A forced instruction models a PIO EXEC issued from the
+    //      CPU, which runs effectively instantaneously relative to the SM.
+    //      epio does not model fine-grained CPU/PIO interleaving, so
+    //      discarding its own delay is the correct approximation rather than
+    //      applying it to the SM.
+    uint8_t delay = SM(block, sm).delay;
+    epio_exec_instr_sm(epio, block, sm, instr);
+    SM(block, sm).delay = delay;
+}
